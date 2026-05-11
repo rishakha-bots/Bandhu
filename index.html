@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0a0a0f" />
+<title>BANDHU — Your friend in every meeting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Tiro+Telugu&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0a0a0f;
+    --bg-2:#13131a;
+    --panel:#1a1a24;
+    --panel-2:#21212e;
+    --ink:#f4f1ea;
+    --ink-dim:#a09a8e;
+    --ink-mute:#615c52;
+    --accent:#ff5b3a;   /* sindoor */
+    --accent-2:#f6c453; /* haldi   */
+    --accent-3:#3aa17c; /* mehendi */
+    --line:rgba(244,241,234,.08);
+    --line-2:rgba(244,241,234,.16);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow-x:hidden}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Fraunces', Georgia, serif;
+    font-feature-settings:'ss01','ss02';
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(255,91,58,.10), transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(58,161,124,.08), transparent 45%),
+      radial-gradient(circle at 50% 100%, rgba(246,196,83,.05), transparent 50%);
+    min-height:100vh;
+    overflow-y:auto;
+  }
+  /* subtle grain overlay */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.4;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  .app{
+    position:relative;z-index:2;
+    max-width:480px;margin:0 auto;
+    padding:20px 18px 120px;
+    min-height:100vh;
+  }
+
+  /* HEADER */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:22px;
+  }
+  .brand{display:flex;align-items:baseline;gap:8px}
+  .brand .glyph{
+    font-family:'Tiro Telugu',serif;color:var(--accent);font-size:28px;line-height:1;
+    transform:translateY(2px);
+  }
+  .brand h1{
+    font-weight:800;font-size:26px;letter-spacing:-.02em;
+    font-style:italic;
+  }
+  .brand .dot{color:var(--accent);font-style:normal;}
+  .status{
+    display:flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:var(--ink-dim);text-transform:uppercase;letter-spacing:.12em;
+  }
+  .status .pulse{
+    width:8px;height:8px;border-radius:50%;background:var(--ink-mute);
+    box-shadow:0 0 0 0 rgba(0,0,0,0);
+  }
+  .status.live .pulse{
+    background:var(--accent-3);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(58,161,124,.5)}
+    50%{box-shadow:0 0 0 8px rgba(58,161,124,0)}
+  }
+
+  .tagline{
+    font-style:italic;font-size:14px;color:var(--ink-dim);
+    margin-bottom:24px;letter-spacing:-.01em;
+  }
+  .tagline .sep{color:var(--accent);margin:0 6px}
+
+  /* LANGUAGE PICKER */
+  .lang-row{
+    display:flex;gap:8px;margin-bottom:16px;
+    padding:6px;background:var(--panel);border-radius:14px;
+    border:1px solid var(--line);
+  }
+  .lang-btn{
+    flex:1;background:transparent;color:var(--ink-dim);border:none;
+    padding:10px 8px;border-radius:10px;cursor:pointer;
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.1em;text-transform:uppercase;
+    transition:all .25s ease;
+  }
+  .lang-btn.active{
+    background:var(--accent);color:#0a0a0f;font-weight:500;
+  }
+  .lang-btn .native{
+    display:block;font-family:'Tiro Telugu',serif;font-size:14px;
+    text-transform:none;letter-spacing:0;margin-top:2px;
+  }
+  .lang-btn.active .native{color:#0a0a0f}
+
+  /* MAIN MIC CTA */
+  .mic-wrap{
+    display:flex;flex-direction:column;align-items:center;
+    margin:8px 0 22px;
+  }
+  .mic-btn{
+    width:96px;height:96px;border-radius:50%;
+    background:linear-gradient(145deg,var(--accent),#d94522);
+    border:none;cursor:pointer;position:relative;
+    box-shadow:
+      0 12px 30px -8px rgba(255,91,58,.45),
+      inset 0 1px 0 rgba(255,255,255,.2);
+    transition:transform .2s ease;
+  }
+  .mic-btn:active{transform:scale(.95)}
+  .mic-btn svg{width:38px;height:38px;fill:#fff}
+  .mic-btn.listening{
+    background:linear-gradient(145deg,#3aa17c,#2a7458);
+    box-shadow:0 12px 30px -8px rgba(58,161,124,.5),inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  .mic-btn.listening::before,
+  .mic-btn.listening::after{
+    content:"";position:absolute;inset:-4px;border-radius:50%;
+    border:2px solid var(--accent-3);opacity:0;
+    animation:ripple 2s ease-out infinite;
+  }
+  .mic-btn.listening::after{animation-delay:1s}
+  @keyframes ripple{
+    0%{transform:scale(.95);opacity:.7}
+    100%{transform:scale(1.4);opacity:0}
+  }
+  .mic-label{
+    margin-top:14px;font-family:'JetBrains Mono',monospace;
+    font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.15em;
+  }
+
+  /* PANELS */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px 16px 18px;
+    margin-bottom:12px;
+    position:relative;overflow:hidden;
+  }
+  .panel-label{
+    display:flex;align-items:center;gap:8px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;color:var(--ink-mute);
+    text-transform:uppercase;letter-spacing:.18em;
+    margin-bottom:10px;
+  }
+  .panel-label .ico{font-size:13px}
+  .panel-label .tag{
+    margin-left:auto;font-size:9px;color:var(--ink-mute);
+  }
+
+  .speech-text{
+    font-size:18px;line-height:1.45;
+    color:var(--ink);font-weight:400;
+    min-height:54px;
+    letter-spacing:-.01em;
+  }
+  .speech-text.empty{color:var(--ink-mute);font-style:italic;font-size:15px}
+  .speech-text .interim{color:var(--ink-dim);font-style:italic}
+
+  /* simple english panel */
+  .panel.simple{
+    background:linear-gradient(135deg,rgba(246,196,83,.06),rgba(246,196,83,.02));
+    border-color:rgba(246,196,83,.18);
+  }
+  .panel.simple .panel-label{color:var(--accent-2)}
+  .panel.simple .speech-text{color:#fef4d9}
+
+  /* telugu panel */
+  .panel.telugu{
+    background:linear-gradient(135deg,rgba(58,161,124,.08),rgba(58,161,124,.02));
+    border-color:rgba(58,161,124,.2);
+    display:none;
+  }
+  .panel.telugu.show{display:block}
+  .panel.telugu .panel-label{color:var(--accent-3)}
+  .panel.telugu .speech-text{
+    font-family:'Tiro Telugu',serif;font-size:20px;line-height:1.5;
+    color:#cfeadf;
+  }
+
+  /* ACTION ITEMS */
+  .actions{
+    background:linear-gradient(135deg,rgba(255,91,58,.08),rgba(255,91,58,.02));
+    border-color:rgba(255,91,58,.22);
+  }
+  .actions .panel-label{color:var(--accent)}
+  .action-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .action-item{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:10px 12px;background:rgba(255,255,255,.03);
+    border-radius:10px;border-left:3px solid var(--accent);
+    font-size:15px;line-height:1.4;
+    animation:slideIn .4s ease;
+  }
+  @keyframes slideIn{
+    from{opacity:0;transform:translateX(-8px)}
+    to{opacity:1;transform:translateX(0)}
+  }
+  .action-item .checkbox{
+    width:18px;height:18px;border-radius:5px;
+    border:1.5px solid var(--ink-mute);flex-shrink:0;margin-top:2px;
+    cursor:pointer;transition:all .2s;
+  }
+  .action-item.done .checkbox{
+    background:var(--accent-3);border-color:var(--accent-3);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230a0a0f' stroke-width='3' stroke-linecap='round'><polyline points='4 12 10 18 20 6'/></svg>");
+    background-size:14px;background-position:center;background-repeat:no-repeat;
+  }
+  .action-item.done .text{text-decoration:line-through;color:var(--ink-mute)}
+  .action-empty{
+    color:var(--ink-mute);font-style:italic;font-size:13px;
+    padding:6px 0;
+  }
+
+  /* CONTROLS BAR */
+  .controls{
+    display:flex;gap:8px;margin-top:14px;
+  }
+  .ctrl-btn{
+    flex:1;background:var(--panel-2);color:var(--ink-dim);
+    border:1px solid var(--line);border-radius:10px;
+    padding:10px;cursor:pointer;
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;
+    transition:all .2s;
+  }
+  .ctrl-btn:active{background:var(--panel)}
+  .ctrl-btn.danger{color:#ff7e63}
+
+  /* FOOTER */
+  footer{
+    text-align:center;margin-top:30px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;color:var(--ink-mute);letter-spacing:.1em;
+    line-height:1.7;
+  }
+  footer .heart{color:var(--accent)}
+
+  /* WARNING BANNER */
+  .warn{
+    background:rgba(255,91,58,.1);border:1px solid rgba(255,91,58,.3);
+    color:#ffb09c;padding:12px 14px;border-radius:12px;
+    font-size:13px;line-height:1.5;margin-bottom:14px;
+    display:none;
+  }
+  .warn.show{display:block}
+  .warn b{color:var(--accent)}
+
+  /* TOAST */
+  .toast{
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--panel-2);color:var(--ink);
+    padding:10px 18px;border-radius:30px;
+    font-size:13px;border:1px solid var(--line-2);
+    opacity:0;pointer-events:none;transition:all .3s ease;
+    z-index:100;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <span class="glyph">బ</span>
+      <h1>Bandhu<span class="dot">.</span></h1>
+    </div>
+    <div class="status" id="status">
+      <span class="pulse"></span>
+      <span id="statusText">Idle</span>
+    </div>
+  </header>
+
+  <p class="tagline">Your friend in every meeting <span class="sep">·</span> private &amp; free</p>
+
+  <div class="warn" id="warn"></div>
+
+  <!-- DEBUG LOG (mobile diagnostic) -->
+  <div id="debugLog" style="background:#000;color:#0f0;font-family:monospace;font-size:11px;padding:8px;border-radius:8px;margin-bottom:12px;max-height:140px;overflow-y:auto;border:1px solid #0f0;">
+    <div style="color:#ff0;margin-bottom:4px;">📋 DEBUG LOG (tap to clear)</div>
+    <div id="debugContent">waiting…</div>
+  </div>
+
+  <!-- LANGUAGE PICKER -->
+  <div class="lang-row" role="tablist" aria-label="Output language">
+    <button class="lang-btn active" data-lang="simple" id="btnSimple">
+      Simple English
+      <span class="native">easy words</span>
+    </button>
+    <button class="lang-btn" data-lang="telugu" id="btnTelugu">
+      Telugu
+      <span class="native">తెలుగు</span>
+    </button>
+  </div>
+
+  <!-- MIC -->
+  <div class="mic-wrap">
+    <button class="mic-btn" id="micBtn" aria-label="Start listening">
+      <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+    </button>
+    <div class="mic-label" id="micLabel">Tap to start</div>
+  </div>
+
+  <!-- ORIGINAL SPEECH -->
+  <div class="panel">
+    <div class="panel-label"><span class="ico">🗣️</span> They said <span class="tag" id="srcLang">auto</span></div>
+    <div class="speech-text empty" id="originalText">Waiting for speech…</div>
+  </div>
+
+  <!-- SIMPLE ENGLISH -->
+  <div class="panel simple">
+    <div class="panel-label"><span class="ico">✨</span> Simple English</div>
+    <div class="speech-text empty" id="simpleText">Easy version will appear here</div>
+  </div>
+
+  <!-- TELUGU -->
+  <div class="panel telugu" id="teluguPanel">
+    <div class="panel-label"><span class="ico">🔵</span> తెలుగు</div>
+    <div class="speech-text empty" id="teluguText">తెలుగు అనువాదం ఇక్కడ కనిపిస్తుంది</div>
+  </div>
+
+  <!-- ACTION ITEMS -->
+  <div class="panel actions">
+    <div class="panel-label">
+      <span class="ico">📌</span> Action items for you
+      <span class="tag" id="actionCount">0</span>
+    </div>
+    <ul class="action-list" id="actionList">
+      <li class="action-empty">Action items assigned to you will appear here automatically.</li>
+    </ul>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="copyBtn">📋 Copy summary</button>
+    <button class="ctrl-btn danger" id="clearBtn">🗑️ Clear</button>
+  </div>
+
+  <footer>
+    100% private · on-device · no account · no cost<br/>
+    made with <span class="heart">♥</span> for everyone who deserves to be heard
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   BANDHU V1 — Single-file mobile web app
+   - Web Speech API for STT (Chrome on Android)
+   - MyMemory API for translation (no key)
+   - Local keyword logic for action item extraction
+   - localStorage for persistence
+   ========================================================= */
+
+const $ = (id) => document.getElementById(id);
+
+// --- State ---
+const state = {
+  outputLang: localStorage.getItem('bandhu_lang') || 'simple', // 'simple' | 'telugu'
+  listening: false,
+  userWantsToListen: false, // user-intent flag for auto-restart on mobile
+  recognition: null,
+  finalTranscript: '',
+  interim: '',
+  actions: JSON.parse(localStorage.getItem('bandhu_actions') || '[]'),
+};
+
+// --- UI refs ---
+const ui = {
+  status: $('status'), statusText: $('statusText'),
+  micBtn: $('micBtn'), micLabel: $('micLabel'),
+  warn: $('warn'),
+  original: $('originalText'), simple: $('simpleText'), telugu: $('teluguText'),
+  teluguPanel: $('teluguPanel'),
+  actionList: $('actionList'), actionCount: $('actionCount'),
+  srcLang: $('srcLang'),
+  btnSimple: $('btnSimple'), btnTelugu: $('btnTelugu'),
+  toast: $('toast'),
+};
+
+// --- Toast helper ---
+function toast(msg, ms=2200){
+  ui.toast.textContent = msg;
+  ui.toast.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>ui.toast.classList.remove('show'), ms);
+}
+
+// --- Language picker ---
+function setLang(lang){
+  state.outputLang = lang;
+  localStorage.setItem('bandhu_lang', lang);
+  ui.btnSimple.classList.toggle('active', lang==='simple');
+  ui.btnTelugu.classList.toggle('active', lang==='telugu');
+  ui.teluguPanel.classList.toggle('show', lang==='telugu');
+}
+ui.btnSimple.addEventListener('click', ()=>setLang('simple'));
+ui.btnTelugu.addEventListener('click', ()=>setLang('telugu'));
+setLang(state.outputLang);
+
+// --- Debug log helper (visible on mobile) ---
+const dbg = (msg) => {
+  const el = document.getElementById('debugContent');
+  if(!el) return;
+  const time = new Date().toLocaleTimeString();
+  el.innerHTML = `<div>[${time}] ${msg}</div>` + el.innerHTML;
+  // cap to ~30 lines
+  const lines = el.innerHTML.split('</div>');
+  if(lines.length > 30) el.innerHTML = lines.slice(0,30).join('</div>') + '</div>';
+};
+document.getElementById('debugLog').addEventListener('click', () => {
+  document.getElementById('debugContent').innerHTML = 'cleared';
+});
+
+dbg('App loaded. UA: ' + navigator.userAgent.slice(0,60));
+
+// --- Speech Recognition setup ---
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(!SR){
+  ui.warn.classList.add('show');
+  ui.warn.innerHTML = '<b>⚠️ Browser not supported.</b><br/>Please open this page in <b>Chrome on Android</b> for speech recognition to work.';
+  ui.micBtn.disabled = true;
+  ui.micLabel.textContent = 'Not available';
+  dbg('❌ SpeechRecognition NOT available');
+} else {
+  dbg('✅ SpeechRecognition available');
+  state.recognition = new SR();
+  state.recognition.continuous = true;
+  state.recognition.interimResults = true;
+  state.recognition.lang = 'en-US'; // recognizes most accents of English well
+
+  state.recognition.onstart = () => {
+    state.listening = true;
+    ui.micBtn.classList.add('listening');
+    ui.status.classList.add('live');
+    ui.statusText.textContent = 'Listening';
+    ui.micLabel.textContent = 'Tap to stop';
+    dbg('🟢 onstart fired');
+  };
+
+  state.recognition.onaudiostart = () => dbg('🎤 onaudiostart — mic active');
+  state.recognition.onsoundstart = () => dbg('🔊 onsoundstart — sound detected');
+  state.recognition.onspeechstart = () => dbg('🗣️ onspeechstart — speech detected');
+  state.recognition.onspeechend = () => dbg('🤐 onspeechend');
+  state.recognition.onsoundend = () => dbg('🔇 onsoundend');
+  state.recognition.onaudioend = () => dbg('🎤❌ onaudioend');
+  state.recognition.onnomatch = () => dbg('❓ onnomatch — speech not recognized');
+
+  state.recognition.onend = () => {
+    state.listening = false;
+    dbg('🔴 onend fired. userWants=' + state.userWantsToListen);
+    // If the user still wants to listen, restart automatically (mobile Chrome auto-stops)
+    if(state.userWantsToListen){
+      // tiny delay to avoid rapid-fire restart loops
+      setTimeout(() => {
+        if(state.userWantsToListen){
+          try { state.recognition.start(); dbg('🔄 auto-restart'); }
+          catch(err){ dbg('❌ restart failed: '+err.message); }
+        }
+      }, 250);
+      // keep UI in "listening" state visually
+      ui.statusText.textContent = 'Listening';
+      return;
+    }
+    ui.micBtn.classList.remove('listening');
+    ui.status.classList.remove('live');
+    ui.statusText.textContent = 'Idle';
+    ui.micLabel.textContent = 'Tap to start';
+  };
+
+  state.recognition.onerror = (e) => {
+    dbg('⚠️ ERROR: '+e.error + (e.message?' ('+e.message+')':''));
+    console.warn('SR error', e);
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+      state.userWantsToListen = false;
+      ui.warn.classList.add('show');
+      ui.warn.innerHTML = '<b>🎤 Mic permission denied.</b><br/>Please allow microphone access in Chrome settings and refresh.';
+    } else if(e.error === 'no-speech' || e.error === 'aborted' || e.error === 'audio-capture'){
+      // silently ignored — onend will auto-restart
+    } else if(e.error === 'network'){
+      toast('Network issue — check internet');
+    } else {
+      toast('Recognition error: '+e.error);
+    }
+  };
+
+  state.recognition.onresult = (event) => {
+    let interim = '';
+    let finalChunk = '';
+    for(let i=event.resultIndex; i<event.results.length; i++){
+      const t = event.results[i][0].transcript;
+      if(event.results[i].isFinal) finalChunk += t + ' ';
+      else interim += t;
+    }
+    dbg('📝 onresult: final="'+finalChunk.slice(0,30)+'" interim="'+interim.slice(0,30)+'"');
+
+    if(finalChunk){
+      state.finalTranscript += finalChunk;
+      processFinalChunk(finalChunk.trim());
+    }
+    renderOriginal(state.finalTranscript, interim);
+  };
+}
+
+// --- Mic button ---
+ui.micBtn.addEventListener('click', async () => {
+  if(!state.recognition) return;
+  if(state.listening || state.userWantsToListen){
+    // user explicitly stopping
+    state.userWantsToListen = false;
+    try { state.recognition.stop(); } catch{}
+  } else {
+    state.userWantsToListen = true;
+    try {
+      // request mic permission explicitly (helps on some Androids)
+      await navigator.mediaDevices.getUserMedia({audio:true}).catch(()=>{});
+      state.recognition.start();
+    } catch(err){
+      console.warn(err);
+      if(err.name === 'InvalidStateError'){
+        // already started
+      } else {
+        state.userWantsToListen = false;
+        toast('Could not start mic');
+      }
+    }
+  }
+});
+
+// --- Render original transcript ---
+function renderOriginal(final, interim){
+  if(!final && !interim){
+    ui.original.classList.add('empty');
+    ui.original.textContent = 'Waiting for speech…';
+    return;
+  }
+  ui.original.classList.remove('empty');
+  // keep only last ~280 chars of final + interim for readability
+  const finalShown = final.length > 280 ? '…'+final.slice(-280) : final;
+  ui.original.innerHTML = escapeHtml(finalShown) +
+    (interim ? ' <span class="interim">'+escapeHtml(interim)+'</span>' : '');
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+/* ===========================================================
+   PROCESS EACH FINAL CHUNK:
+   1. Simplify to simple English (rule-based + optional translate)
+   2. Translate to Telugu (MyMemory)
+   3. Extract action items
+   =========================================================== */
+
+async function processFinalChunk(text){
+  if(!text) return;
+
+  // 1. Simple English version (rule-based simplification)
+  const simple = simplifyEnglish(text);
+  appendTo(ui.simple, simple);
+
+  // 2. Telugu translation — only if user has telugu enabled OR always run lightly?
+  // To save API calls: only translate when telugu is the selected output language.
+  if(state.outputLang === 'telugu'){
+    try {
+      const tel = await translate(simple, 'en', 'te');
+      if(tel) appendTo(ui.telugu, tel);
+    } catch(err){
+      console.warn('translate fail', err);
+    }
+  }
+
+  // 3. Action item extraction
+  const items = extractActionItems(text);
+  items.forEach(addActionItem);
+}
+
+function appendTo(el, txt){
+  el.classList.remove('empty');
+  const prev = el.textContent && !el.classList.contains('was-empty') ? el.textContent : '';
+  // keep last ~3 sentences visible
+  let combined = (prev && prev !== 'Easy version will appear here' && prev !== 'తెలుగు అనువాదం ఇక్కడ కనిపిస్తుంది')
+    ? prev + ' ' + txt : txt;
+  // cap length
+  if(combined.length > 320) combined = '…' + combined.slice(-320);
+  el.textContent = combined;
+}
+
+/* ---------- Simple English rules ---------- */
+// Replace common corporate / complex words with simple ones
+const SIMPLE_MAP = [
+  [/\bsynergi[sz]e\b/gi, 'work together'],
+  [/\bsynergy\b/gi, 'teamwork'],
+  [/\bleverage\b/gi, 'use'],
+  [/\butili[sz]e\b/gi, 'use'],
+  [/\bdeliverables?\b/gi, 'work items'],
+  [/\bstakeholders?\b/gi, 'people involved'],
+  [/\bcircle back\b/gi, 'talk again later'],
+  [/\btouch base\b/gi, 'check in'],
+  [/\bbandwidth\b/gi, 'time'],
+  [/\bganular\b/gi, 'detailed'],
+  [/\bgranular\b/gi, 'detailed'],
+  [/\bholistic\b/gi, 'complete'],
+  [/\bparadigm\b/gi, 'way of thinking'],
+  [/\bactionable\b/gi, 'clear next step'],
+  [/\bmove the needle\b/gi, 'make real progress'],
+  [/\blow.hanging fruit\b/gi, 'easy wins'],
+  [/\bdeep dive\b/gi, 'study closely'],
+  [/\bdrill down\b/gi, 'look in detail'],
+  [/\bping\b/gi, 'message'],
+  [/\bEOD\b/g, 'end of today'],
+  [/\bEOW\b/g, 'end of this week'],
+  [/\bASAP\b/g, 'as soon as possible'],
+  [/\bCOB\b/g, 'end of business day'],
+  [/\bFYI\b/g, 'for your info'],
+  [/\bcadence\b/gi, 'rhythm'],
+  [/\balign(ment)?\b/gi, 'agree'],
+  [/\bonboarding\b/gi, 'getting started'],
+  [/\butili[sz]ation\b/gi, 'usage'],
+  [/\boptimi[sz]e\b/gi, 'improve'],
+  [/\boptimi[sz]ation\b/gi, 'improvement'],
+  [/\biterate\b/gi, 'repeat and improve'],
+  [/\bpivot\b/gi, 'change direction'],
+  [/\bscope creep\b/gi, 'work getting bigger'],
+  [/\bdouble.click\b/gi, 'look more carefully'],
+  [/\bblockers?\b/gi, 'problems'],
+  [/\bdependenc(y|ies)\b/gi, 'things we need first'],
+  [/\bend.to.end\b/gi, 'from start to finish'],
+  [/\bin parallel\b/gi, 'at the same time'],
+  [/\bnet.net\b/gi, 'final result'],
+  [/\bin the weeds\b/gi, 'too deep in details'],
+];
+
+function simplifyEnglish(text){
+  let out = text;
+  SIMPLE_MAP.forEach(([re,rep]) => out = out.replace(re, rep));
+  return out;
+}
+
+/* ---------- Translation via MyMemory (free, no key) ---------- */
+async function translate(text, from, to){
+  if(!text) return '';
+  // MyMemory has ~500 char limit per call for anonymous use
+  const chunk = text.length > 450 ? text.slice(0,450) : text;
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(chunk)}&langpair=${from}|${to}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('translate http '+res.status);
+  const data = await res.json();
+  return (data && data.responseData && data.responseData.translatedText) || '';
+}
+
+/* ---------- Action item extraction (rule-based) ---------- */
+// Detect sentences likely directed at the user with task/deadline cues.
+const TASK_VERBS = /\b(complete|finish|send|prepare|share|update|review|check|confirm|create|build|deploy|fix|investigate|follow up|reach out|email|schedule|set up|book|deliver|provide|submit|test|validate|ensure|make sure|push|merge|raise|file|draft|write|present|sync|coordinate|talk to|reach back|ping|sort out|wrap up|put together|circle back)\b/i;
+const DEADLINE_CUE = /\b(today|tomorrow|tonight|tonite|this week|next week|by (mon|tue|wed|thu|fri|sat|sun)\w*|by (jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*|by end of (day|week|month)|by EOD|by EOW|by COB|by friday|by monday|by tuesday|by wednesday|by thursday|by saturday|by sunday|asap|right away|before \w+)\b/i;
+const ASSIGN_CUE = /\b(you (need to|should|have to|will|must|gotta|can)|please|can you|could you|would you|let's|let us|we need (you )?to|i need you to|action item|todo|to do|on your plate)\b/i;
+
+function extractActionItems(text){
+  // split into sentences
+  const sentences = text.match(/[^.!?]+[.!?]?/g) || [text];
+  const found = [];
+  sentences.forEach(raw => {
+    const s = raw.trim();
+    if(s.length < 6) return;
+    const hasVerb = TASK_VERBS.test(s);
+    const hasAssign = ASSIGN_CUE.test(s);
+    const hasDeadline = DEADLINE_CUE.test(s);
+    // Need: (task verb AND (assigned to user OR deadline)) OR explicit "action item"
+    const explicit = /\b(action item|todo|to.do)\b/i.test(s);
+    if(explicit || (hasVerb && (hasAssign || hasDeadline))){
+      found.push(cleanAction(s));
+    }
+  });
+  return found;
+}
+
+function cleanAction(s){
+  // trim leading filler words
+  return s.replace(/^[\s,;:-]+/, '')
+          .replace(/^(so|and|but|then|ok|okay|alright|um|uh|like)\s+/i, '')
+          .replace(/\s+/g,' ')
+          .trim();
+}
+
+function addActionItem(text){
+  // dedupe
+  if(state.actions.some(a => a.text.toLowerCase() === text.toLowerCase())) return;
+  const item = {
+    id: Date.now() + Math.random(),
+    text,
+    done: false,
+    ts: new Date().toISOString(),
+  };
+  state.actions.push(item);
+  saveActions();
+  renderActions();
+}
+
+function renderActions(){
+  ui.actionCount.textContent = state.actions.length;
+  if(state.actions.length === 0){
+    ui.actionList.innerHTML = '<li class="action-empty">Action items assigned to you will appear here automatically.</li>';
+    return;
+  }
+  ui.actionList.innerHTML = '';
+  state.actions.slice().reverse().forEach(item => {
+    const li = document.createElement('li');
+    li.className = 'action-item' + (item.done ? ' done' : '');
+    li.innerHTML = `
+      <span class="checkbox" data-id="${item.id}"></span>
+      <span class="text">${escapeHtml(item.text)}</span>
+    `;
+    li.querySelector('.checkbox').addEventListener('click', () => toggleAction(item.id));
+    ui.actionList.appendChild(li);
+  });
+}
+
+function toggleAction(id){
+  const item = state.actions.find(a => a.id == id);
+  if(!item) return;
+  item.done = !item.done;
+  saveActions();
+  renderActions();
+}
+
+function saveActions(){
+  localStorage.setItem('bandhu_actions', JSON.stringify(state.actions));
+}
+
+renderActions();
+
+/* ---------- Controls ---------- */
+$('copyBtn').addEventListener('click', async () => {
+  const lines = [];
+  lines.push('BANDHU Meeting Summary');
+  lines.push('=======================');
+  lines.push('');
+  lines.push('Action items:');
+  if(state.actions.length === 0){
+    lines.push('  (none)');
+  } else {
+    state.actions.forEach(a => {
+      lines.push(`  [${a.done?'x':' '}] ${a.text}`);
+    });
+  }
+  lines.push('');
+  lines.push('Original transcript:');
+  lines.push(state.finalTranscript || '(empty)');
+  try {
+    await navigator.clipboard.writeText(lines.join('\n'));
+    toast('Summary copied to clipboard');
+  } catch {
+    toast('Copy failed');
+  }
+});
+
+$('clearBtn').addEventListener('click', () => {
+  if(!confirm('Clear all transcripts and action items?')) return;
+  state.finalTranscript = '';
+  state.actions = [];
+  saveActions();
+  ui.original.textContent = 'Waiting for speech…';
+  ui.original.classList.add('empty');
+  ui.simple.textContent = 'Easy version will appear here';
+  ui.simple.classList.add('empty');
+  ui.telugu.textContent = 'తెలుగు అనువాదం ఇక్కడ కనిపిస్తుంది';
+  ui.telugu.classList.add('empty');
+  renderActions();
+  toast('Cleared');
+});
+
+/* ---------- HTTPS check (mic requires it on Android) ---------- */
+if(location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1'){
+  ui.warn.classList.add('show');
+  ui.warn.innerHTML = '<b>⚠️ HTTPS required.</b><br/>Microphone only works on https:// URLs. Please host on GitHub Pages, Vercel, or Netlify.';
+}
+</script>
+</body>
+</html>
